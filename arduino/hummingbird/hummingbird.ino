@@ -42,7 +42,7 @@ int BPM_memory[3] = {}; //we'll store the previous x number of heartbeats here, 
 int starter_bpm = 60; //fill BPM array with dummy data on boot.
 int current_pos = 0; //pointer to current location in the BPM_array
 
-unsigned long total;     // all three LED reads added together
+int total;     // all three LED reads added together
 unsigned long time = millis();
 unsigned long looptime, motortimeon;
 
@@ -55,10 +55,19 @@ int min_bpm = 30;
 bool beat_on = false;
 bool motoron = false;
 
+
+
 void setup() {
   // initialize the serial communication:
   Serial.begin(115200);
-  pinMode(2, OUTPUT);      // sets the digital pin as output
+  pinMode(10, OUTPUT);
+  digitalWrite(10, HIGH);
+  
+  pinMode(A1, OUTPUT);
+  pinMode(A2, OUTPUT);  
+  digitalWrite(A1, LOW);
+  digitalWrite(A2, LOW);
+  
   //fill BPM_memory array with dummy data.
   for (int i = 0; i < SAMPLES_TO_AVERAGE; ++i){
    BPM_memory[i] = starter_bpm;
@@ -67,18 +76,20 @@ void setup() {
 }
 
 
+
 void loop() {
   static  int valley=0, peak=0, smoothPeak, smoothValley, binOut, lastBinOut, BPM;
   static unsigned long lastTotal, lastMillis,  valleyTime = millis(), lastValleyTime = millis(), peakTime = millis(), lastPeakTime=millis(), lastBeat, beat;
   static float baseline, HFoutput, HFoutput2, shiftedOutput, LFoutput, hysterisis;
 
-  unsigned long total=0, start;
+  
+  unsigned long start;
   int i=0;
   int signalSize;
-  total = 0;
   start = millis();
 
-  total = analogRead(A0);
+  int total = analogRead(A0);
+  Serial.println(total);
 
   baseline = smooth(total, 0.99, baseline);   // 
   HFoutput = smooth((total - baseline), 0.2, HFoutput);    // recycling output - filter to slow down response
@@ -137,8 +148,8 @@ void loop() {
     BPM = 60000 / (beat - lastBeat);
 
     if (BPM > min_bpm && BPM < max_bpm){
-      Serial.print(BPM);  
-      Serial.print('\n');
+//      Serial.print(BPM);  
+//      Serial.print('\n');
       
       //add to array
       if (current_pos + 1 == SAMPLES_TO_AVERAGE){
@@ -154,13 +165,16 @@ void loop() {
       
       //just for debugging
       float diff = avg - BPM;
-      Serial.println(diff);
+//      Serial.println(diff);
       
       //turn motor on if below average BPM, else turn it off
-      if (BPM < avg){
-        digitalWrite(2, HIGH);      
+      if (BPM < avg - 5){
+        digitalWrite(A1, HIGH);
+        digitalWrite(A2, HIGH);
+
       }else{
-        digitalWrite(2, LOW);      
+        digitalWrite(A1, LOW);      
+        digitalWrite(A2, LOW);  
       }
 
     }
