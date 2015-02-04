@@ -89,7 +89,7 @@ void loop() {
   start = millis();
 
   int total = analogRead(A0);
-  Serial.println(total);
+//  Serial.println(total);
 
   baseline = smooth(total, 0.99, baseline);   // 
   HFoutput = smooth((total - baseline), 0.2, HFoutput);    // recycling output - filter to slow down response
@@ -148,8 +148,7 @@ void loop() {
     BPM = 60000 / (beat - lastBeat);
 
     if (BPM > min_bpm && BPM < max_bpm){
-//      Serial.print(BPM);  
-//      Serial.print('\n');
+      Serial.println(BPM);  
       
       //add to array
       if (current_pos + 1 == SAMPLES_TO_AVERAGE){
@@ -163,14 +162,16 @@ void loop() {
       //calc avg
       float avg = average(BPM_memory);
       
-      //just for debugging
-      float diff = avg - BPM;
-//      Serial.println(diff);
-      
       //turn motor on if below average BPM, else turn it off
-      if (BPM < avg - 5){
-        digitalWrite(A1, HIGH);
-        digitalWrite(A2, HIGH);
+       float diff = avg - BPM;
+       if (diff > 0 ){
+        float analog_pump_up = scale_num(diff, 0, 11); //guesstimate, play with parameters. this means 11 BPM below average is max drop we'd reward with increased buzz.
+        Serial.println(diff);
+        Serial.println(analog_pump_up);
+        
+        analogWrite(A1, analog_pump_up);
+//        digitalWrite(A1, HIGH);
+//        digitalWrite(A2, HIGH);
 
       }else{
         digitalWrite(A1, LOW);      
@@ -185,6 +186,10 @@ void loop() {
 }
 
 
+float scale_num(float input, float min_val, float max_val){
+   //scales an input, say heartbeat BPM, to 0-255 for analogWrite, returns scaled value
+   return input * 255.0 / (max_val - min_val);
+}
 
 // simple smoothing function for  heartbeat detection and processing
 float smooth(float data, float filterVal, float smoothedVal){
