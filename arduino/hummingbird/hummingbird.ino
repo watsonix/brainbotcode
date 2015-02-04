@@ -164,8 +164,8 @@ void loop() {
       
       //turn motor on if below average BPM, else turn it off
        float diff = avg - BPM;
-       if (diff > 0 ){
-        float analog_pump_up = scale_num(diff, 0, 11); //guesstimate, play with parameters. this means 11 BPM below average is max drop we'd reward with increased buzz.
+       if (diff > 5 ){
+        float analog_pump_up = scale_num(diff, 5, 30); //guesstimate, play with parameters. this means 11 BPM below average is max drop we'd reward with increased buzz.
         Serial.println(diff);
         Serial.println(analog_pump_up);
         
