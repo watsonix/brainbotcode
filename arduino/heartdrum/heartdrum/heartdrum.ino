@@ -27,8 +27,7 @@ int min = 1000;
 
 int max_bpm = 120;
 int min_bpm = 30;  
-bool beat_on = false;
-bool motoron = false;
+int threshold = 70; //BPM above which the feedback will activate. set to zero to be on constantly.
 
 
 
@@ -42,6 +41,7 @@ void setup() {
   pinMode(A2, OUTPUT);  
   digitalWrite(A1, LOW);
   digitalWrite(A2, LOW);
+  
 
 }
 
@@ -124,10 +124,9 @@ void loop() {
     beat = millis();
     BPM = 60000 / (beat - lastBeat);
 
-    if (BPM > min_bpm && BPM < max_bpm){
-//      Serial.println(BPM);  
+    if (BPM > min_bpm && BPM < max_bpm && BPM > threshold){
+//      Serial.println(BPM); 
       motortimeon = millis();      
-
     }
   }
   
