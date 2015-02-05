@@ -1,6 +1,6 @@
 /*
-implement constant butterfly/hummingbird feedback
- rohan dixit 2014
+give feedback when consecutive heartbeats have decreasing BPM's.
+rohan dixit 2015
  
  ECG
  // baseline is the moving average of the signal - the middle of the waveform
@@ -9,35 +9,14 @@ implement constant butterfly/hummingbird feedback
  // The HF signal is shifted downward slightly (heartbeats are negative peaks)
  // The high freq signal has some hysterisis added. When the HF signal is less than the 
  // shifted LF signal, we have found a heartbeat.
- 
- VIBROMOTORS
- assume there are 5 vibromotors.
- 
- all off
- o o o o o 
- 
- full
- x x x x x
- 
- middle
- o x x x o
- 
- small
- o o x o o 
- 
- 
- use last 10 (say) BPM measurements to calculate an average BPM. 
- 
- if you're above average, activate "full" setting.
- if you're right at average, activate "middle" setting. 
- if you're below average, activate "small" setting.
- 
  */
 
 
 const int SAMPLES_TO_AVERAGE = 3;             // samples for BPM array, 3-5 seems useful
 int binOut;     // 1 or 0 depending on state of heartbeat
 int BPM;
+int prev_BPM;
+int diff; //dif
 int BPM_memory[3] = {}; //we'll store the previous x number of heartbeats here, so we can find when new heartbeats are "slower"
 int starter_bpm = 60; //fill BPM array with dummy data on boot.
 int current_pos = 0; //pointer to current location in the BPM_array
@@ -145,39 +124,26 @@ void loop() {
   if (lastBinOut == 0 && binOut == 1){
     lastBeat = beat;
     beat = millis();
+    prev_BPM = BPM; //store last value of BPM
     BPM = 60000 / (beat - lastBeat);
+    Serial.println("BPM");    
+    Serial.println(BPM);
+    Serial.println(prev_BPM);
 
     if (BPM > min_bpm && BPM < max_bpm){
-      Serial.println(BPM);  
-      
-      //add to array
-      if (current_pos + 1 == SAMPLES_TO_AVERAGE){
-        current_pos = 0;
-      }
-      else{
-        current_pos++;
-      }
-      BPM_memory[current_pos] = BPM;
-      
-      //calc avg
-      float avg = average(BPM_memory);
-      
-      //turn motor on if below average BPM, else turn it off
-       float diff = avg - BPM;
-       if (diff > 5 ){
-        float analog_pump_up = scale_num(diff, 5, 30); //guesstimate, play with parameters. this means 11 BPM below average is max drop we'd reward with increased buzz.
-        Serial.println(diff);
-        Serial.println(analog_pump_up);
-        
-        analogWrite(A1, analog_pump_up);
-//        digitalWrite(A1, HIGH);
-//        digitalWrite(A2, HIGH);
-
+      diff = BPM - prev_BPM;
+      Serial.println("diff");
+      Serial.println(diff);
+    
+      //if this BPM is less than the last, turn on motor 
+       if (diff > 0){
+        Serial.println("digital_pump_up");
+        digitalWrite(A1, HIGH);
+        digitalWrite(A2, HIGH);
       }else{
         digitalWrite(A1, LOW);      
         digitalWrite(A2, LOW);  
       }
-
     }
   }
 

@@ -61,7 +61,7 @@ void loop() {
   
   //100 milliseconds on motor
   unsigned long diff = millis() - motortimeon;
-  if ( diff < 50){
+  if ( diff < 100){
         digitalWrite(A1, HIGH);
         digitalWrite(A2, HIGH);
         Serial.println('on');
