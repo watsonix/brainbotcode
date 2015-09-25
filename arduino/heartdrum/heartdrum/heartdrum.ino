@@ -13,6 +13,11 @@ motor on every heartbeat
 
  */
 
+int motor_dur_ms = 5; 
+int max_bpm = 120;
+int min_bpm = 30;  
+int threshold = 55; //70 BPM above which the feedback will activate. set to zero to be on constantly.
+
 
 int binOut;     // 1 or 0 depending on state of heartbeat
 int BPM;
@@ -24,11 +29,6 @@ unsigned long looptime, motortimeon;
 int signalSize;          // the heartbeat signal minus the offset
 int max = 0;
 int min = 1000;
-
-int max_bpm = 120;
-int min_bpm = 30;  
-int threshold = 70; //BPM above which the feedback will activate. set to zero to be on constantly.
-
 
 
 void setup() {
@@ -59,9 +59,9 @@ void loop() {
   start = millis();
   
   
-  //100 milliseconds on motor
+  //duration in milliseconds on motor
   unsigned long diff = millis() - motortimeon;
-  if ( diff < 100){
+  if ( diff < motor_dur_ms){
         digitalWrite(A1, HIGH);
         digitalWrite(A2, HIGH);
         Serial.println('on');
